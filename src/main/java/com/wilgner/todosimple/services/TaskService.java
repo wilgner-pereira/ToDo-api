@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -21,6 +22,11 @@ public class TaskService {
    public Task findByid(Long id){
        Optional<Task> task = this.taskRepository.findById(id);
        return task.orElseThrow(() -> new RuntimeException("Task not found"));
+   }
+
+   public List<Task> findByAllUserId(Long userId){
+        List<Task> tasks = this.taskRepository.findByUser_id(userId);
+        return tasks;
    }
 
    @Transactional
