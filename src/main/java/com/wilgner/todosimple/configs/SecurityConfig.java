@@ -19,7 +19,7 @@ import java.util.Arrays;
 @Configuration
 @EnableWebSecurity
 @EnableGlobalMethodSecurity(prePostEnabled = true)
-public class SecutiryConfig {
+public class SecurityConfig {
 
     private static final String[] PUBLIC_MATCHERS = {"/"};
 
