@@ -3,6 +3,8 @@ package com.wilgner.todosimple.services;
 import com.wilgner.todosimple.models.User;
 import com.wilgner.todosimple.repositories.TaskRepository;
 import com.wilgner.todosimple.repositories.UserRepository;
+import com.wilgner.todosimple.services.exceptions.DataBindingViolationException;
+import com.wilgner.todosimple.services.exceptions.ObjectNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -18,7 +20,7 @@ public class UserService {
 
     public User findById(Long id){
         Optional<User> user = this.userRepository.findById(id);
-        return user.orElseThrow( ()-> new RuntimeException("User not found"));
+        return user.orElseThrow( ()-> new ObjectNotFoundException("User not found" + id + ", Tipo: " + User.class.getName()));
     }
 
     @Transactional
@@ -39,7 +41,7 @@ public class UserService {
         try{
             this.userRepository.deleteById(id);
         }catch(Exception e){
-            throw new RuntimeException("Não é possível excluir por haver entidades relacionadas");
+            throw new DataBindingViolationException("Não é possível excluir por haver entidades relacionadas");
         }
     }
 
