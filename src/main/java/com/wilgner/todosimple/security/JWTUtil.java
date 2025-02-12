@@ -12,11 +12,11 @@ import java.util.Objects;
 
 @Component
 public class JWTUtil {
-    @Value("{jwt.secret}")
+    @Value("${jwt.secret}")
     private String secret;
 
-    @Value("{jwt.expiration}")
-    private String expiration;
+    @Value("${jwt.expiration}")
+    private Long expiration;
 
     public String generateToken(String username) {
         SecretKey key = getKeyBySecret();
