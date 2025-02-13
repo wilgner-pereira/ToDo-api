@@ -2,6 +2,7 @@ package com.wilgner.todosimple.configs;
 
 
 import com.wilgner.todosimple.security.JWTAuthenticationFilter;
+import com.wilgner.todosimple.security.JWTAuthorizationFilter;
 import com.wilgner.todosimple.security.JWTUtil;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -57,6 +58,7 @@ public class SecurityConfig {
                 .authenticationManager(this.authenticationManager);
 
         http.addFilter(new JWTAuthenticationFilter(authenticationManager, jwtUtil));
+        http.addFilter(new JWTAuthorizationFilter(authenticationManager,this.jwtUtil, this.userDetailsService));
 
 
         http.sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS);
