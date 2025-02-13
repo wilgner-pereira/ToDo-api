@@ -1,16 +1,13 @@
 package com.wilgner.todosimple.controllers;
 
 import com.wilgner.todosimple.models.Task;
-import com.wilgner.todosimple.models.User;
 import com.wilgner.todosimple.services.TaskService;
-import com.wilgner.todosimple.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.support.ServletUriComponentsBuilder;
 
-import javax.servlet.Servlet;
 import javax.validation.Valid;
 import java.net.URI;
 import java.util.List;
@@ -23,8 +20,6 @@ public class TaskController {
     @Autowired
     private TaskService taskService;
 
-    @Autowired
-    private UserService userService;
 
     @GetMapping("/{id}")
     public ResponseEntity<Task> findById(@PathVariable Long id) {
@@ -32,10 +27,9 @@ public class TaskController {
         return ResponseEntity.ok().body(obj);
     }
 
-    @GetMapping("/user/{userId}")
-    public ResponseEntity<List<Task>> findAllByUserid(@PathVariable Long userId) {
-        this.userService.findById(userId);
-        List<Task> objs = this.taskService.findByAllUserId(userId);
+    @GetMapping("/user")
+    public ResponseEntity<List<Task>> findAllByUser() {
+        List<Task> objs = this.taskService.findByAllUser();
         return ResponseEntity.ok().body(objs);
 
     }
