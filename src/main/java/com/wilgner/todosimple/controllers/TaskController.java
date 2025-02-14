@@ -1,6 +1,7 @@
 package com.wilgner.todosimple.controllers;
 
 import com.wilgner.todosimple.models.Task;
+import com.wilgner.todosimple.models.projection.TaskProjection;
 import com.wilgner.todosimple.services.TaskService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,28 +21,24 @@ public class TaskController {
     @Autowired
     private TaskService taskService;
 
-
     @GetMapping("/{id}")
     public ResponseEntity<Task> findById(@PathVariable Long id) {
-        Task obj = this.taskService.findByid(id);
-        return ResponseEntity.ok().body(obj);
+        Task obj = this.taskService.findById(id);
+        return ResponseEntity.ok(obj);
     }
 
     @GetMapping("/user")
-    public ResponseEntity<List<Task>> findAllByUser() {
-        List<Task> objs = this.taskService.findByAllUser();
+    public ResponseEntity<List<TaskProjection>> findAllByUser() {
+        List<TaskProjection> objs = this.taskService.findAllByUser();
         return ResponseEntity.ok().body(objs);
-
     }
 
     @PostMapping
     @Validated
-    public ResponseEntity<Void> createTask(@Valid @RequestBody Task obj){
+    public ResponseEntity<Void> create(@Valid @RequestBody Task obj) {
         this.taskService.create(obj);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(obj.getId())
-                .toUri();
+                .path("/{id}").buildAndExpand(obj.getId()).toUri();
         return ResponseEntity.created(uri).build();
     }
 
@@ -58,8 +55,5 @@ public class TaskController {
         this.taskService.delete(id);
         return ResponseEntity.noContent().build();
     }
-
-
-
 
 }

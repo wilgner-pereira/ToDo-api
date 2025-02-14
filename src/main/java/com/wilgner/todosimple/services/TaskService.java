@@ -3,6 +3,7 @@ package com.wilgner.todosimple.services;
 import com.wilgner.todosimple.models.Task;
 import com.wilgner.todosimple.models.User;
 import com.wilgner.todosimple.models.enums.ProfileEnum;
+import com.wilgner.todosimple.models.projection.TaskProjection;
 import com.wilgner.todosimple.repositories.TaskRepository;
 import com.wilgner.todosimple.security.UserSpringSecurity;
 import com.wilgner.todosimple.services.exceptions.AuthorizationException;
@@ -19,34 +20,36 @@ import java.util.Optional;
 @Service
 public class TaskService {
 
-   @Autowired
-   private TaskRepository taskRepository;
+    @Autowired
+    private TaskRepository taskRepository;
 
-   @Autowired
-   private UserService userService;
+    @Autowired
+    private UserService userService;
 
-   public Task findByid(Long id){
-       Task task = this.taskRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException("Task not found! ID: " + id + "Type: " + Task.class.getName()));
+    public Task findById(Long id) {
+        Task task = this.taskRepository.findById(id).orElseThrow(() -> new ObjectNotFoundException(
+                "Tarefa não encontrada! Id: " + id + ", Tipo: " + Task.class.getName()));
 
-       UserSpringSecurity userSpringSecurity = UserService.autheticated();
+        UserSpringSecurity userSpringSecurity = UserService.authenticated();
+        if (Objects.isNull(userSpringSecurity)
+                || !userSpringSecurity.hasRole(ProfileEnum.ADMIN) && !userHasTask(userSpringSecurity, task))
+            throw new AuthorizationException("Acesso negado!");
 
-       if(Objects.isNull(userSpringSecurity) || !userSpringSecurity.hasRole(ProfileEnum.ADMIN) && !userHasTask(userSpringSecurity, task))
-           throw new AuthorizationException("Acesso negado!");
-       return task;
-   }
+        return task;
+    }
 
-   public List<Task> findByAllUser(){
-       UserSpringSecurity userSpringSecurity = UserService.autheticated();
-       if(Objects.isNull(userSpringSecurity))
-           throw new AuthorizationException("Acesso negado!");
+    public List<TaskProjection> findAllByUser() {
+        UserSpringSecurity userSpringSecurity = UserService.authenticated();
+        if (Objects.isNull(userSpringSecurity))
+            throw new AuthorizationException("Acesso negado!");
 
-        List<Task> tasks = this.taskRepository.findByUser_id(userSpringSecurity.getId());
+        List<TaskProjection> tasks = this.taskRepository.findByUser_id(userSpringSecurity.getId());
         return tasks;
-   }
+    }
 
     @Transactional
     public Task create(Task obj) {
-        UserSpringSecurity userSpringSecurity = UserService.autheticated();
+        UserSpringSecurity userSpringSecurity = UserService.authenticated();
         if (Objects.isNull(userSpringSecurity))
             throw new AuthorizationException("Acesso negado!");
 
@@ -57,23 +60,24 @@ public class TaskService {
         return obj;
     }
 
-   public Task update(Task obj){
-       Task newObj = findByid(obj.getId());
-       newObj.setDescription(obj.getDescription());
-       return this.taskRepository.save(newObj);
-   }
+    @Transactional
+    public Task update(Task obj) {
+        Task newObj = findById(obj.getId());
+        newObj.setDescription(obj.getDescription());
+        return this.taskRepository.save(newObj);
+    }
 
-   public void delete(Long id){
-       findByid(id);
-       try{
-           this.taskRepository.deleteById(id);
-       }catch(Exception e){
-            throw new DataBindingViolationException("Nãa é possivel deletar pois há entidades relacionadas");
-       }
-   }
+    public void delete(Long id) {
+        findById(id);
+        try {
+            this.taskRepository.deleteById(id);
+        } catch (Exception e) {
+            throw new DataBindingViolationException("Não é possível excluir pois há entidades relacionadas!");
+        }
+    }
 
-   private Boolean userHasTask(UserSpringSecurity userSpringSecurity, Task task){
-       return task.getUser().getId().equals(userSpringSecurity.getId());
-   }
+    private Boolean userHasTask(UserSpringSecurity userSpringSecurity, Task task) {
+        return task.getUser().getId().equals(userSpringSecurity.getId());
+    }
 
 }

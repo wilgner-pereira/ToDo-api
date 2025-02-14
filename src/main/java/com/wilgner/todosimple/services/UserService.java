@@ -1,6 +1,8 @@
 package com.wilgner.todosimple.services;
 
 import com.wilgner.todosimple.models.User;
+import com.wilgner.todosimple.models.dto.UserCreateDTO;
+import com.wilgner.todosimple.models.dto.UserUpdateDTO;
 import com.wilgner.todosimple.models.enums.ProfileEnum;
 import com.wilgner.todosimple.repositories.TaskRepository;
 import com.wilgner.todosimple.repositories.UserRepository;
@@ -14,6 +16,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import javax.validation.Valid;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.stream.Collectors;
@@ -22,48 +25,51 @@ import java.util.stream.Stream;
 
 @Service
 public class UserService {
+
     @Autowired
     private BCryptPasswordEncoder bCryptPasswordEncoder;
+
     @Autowired
     private UserRepository userRepository;
-    @Autowired
-    private TaskRepository taskRepository;
 
-    public User findById(Long id){
-        UserSpringSecurity userSpringSecurity =  autheticated();
-        if(!Objects.nonNull(userSpringSecurity) || !userSpringSecurity.hasRole(ProfileEnum.ADMIN) && !id.equals(userSpringSecurity.getId())){
-            throw new AuthorizationException("Acesso negado");
-        }
+    public User findById(Long id) {
+        UserSpringSecurity userSpringSecurity = authenticated();
+        if (!Objects.nonNull(userSpringSecurity)
+                || !userSpringSecurity.hasRole(ProfileEnum.ADMIN) && !id.equals(userSpringSecurity.getId()))
+            throw new AuthorizationException("Acesso negado!");
+
         Optional<User> user = this.userRepository.findById(id);
-        return user.orElseThrow( ()-> new ObjectNotFoundException("User not found" + id + ", Tipo: " + User.class.getName()));
+        return user.orElseThrow(() -> new ObjectNotFoundException(
+                "Usuário não encontrado! Id: " + id + ", Tipo: " + User.class.getName()));
     }
 
     @Transactional
-    public User create(User obj){
+    public User create(User obj) {
         obj.setId(null);
-        obj.setPassword(bCryptPasswordEncoder.encode(obj.getPassword()));
+        obj.setPassword(this.bCryptPasswordEncoder.encode(obj.getPassword()));
         obj.setProfiles(Stream.of(ProfileEnum.USER.getCode()).collect(Collectors.toSet()));
         obj = this.userRepository.save(obj);
         return obj;
     }
 
-    public User update(User obj){
+    @Transactional
+    public User update(User obj) {
         User newObj = findById(obj.getId());
         newObj.setPassword(obj.getPassword());
-        newObj.setPassword(bCryptPasswordEncoder.encode(newObj.getPassword()));
+        newObj.setPassword(this.bCryptPasswordEncoder.encode(obj.getPassword()));
         return this.userRepository.save(newObj);
     }
 
-    public void delete(Long id){
+    public void delete(Long id) {
         findById(id);
-        try{
+        try {
             this.userRepository.deleteById(id);
-        }catch(Exception e){
-            throw new DataBindingViolationException("Não é possível excluir por haver entidades relacionadas");
+        } catch (Exception e) {
+            throw new DataBindingViolationException("Não é possível excluir pois há entidades relacionadas!");
         }
     }
 
-    public static UserSpringSecurity autheticated(){
+    public static UserSpringSecurity authenticated() {
         try {
             return (UserSpringSecurity) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
         } catch (Exception e) {
@@ -71,5 +77,18 @@ public class UserService {
         }
     }
 
+    public User fromDTO(@Valid UserCreateDTO obj) {
+        User user = new User();
+        user.setUsername(obj.getUsername());
+        user.setPassword(obj.getPassword());
+        return user;
+    }
+
+    public User fromDTO(@Valid UserUpdateDTO obj) {
+        User user = new User();
+        user.setId(obj.getId());
+        user.setPassword(obj.getPassword());
+        return user;
+    }
 
 }

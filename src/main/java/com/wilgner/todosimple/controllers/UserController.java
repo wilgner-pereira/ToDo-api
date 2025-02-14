@@ -1,6 +1,8 @@
 package com.wilgner.todosimple.controllers;
 
 import com.wilgner.todosimple.models.User;
+import com.wilgner.todosimple.models.dto.UserCreateDTO;
+import com.wilgner.todosimple.models.dto.UserUpdateDTO;
 import com.wilgner.todosimple.services.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -17,36 +19,33 @@ import java.net.URI;
 public class UserController {
 
     @Autowired
-    public UserService userService;
+    private UserService userService;
 
     @GetMapping("/{id}")
-    public ResponseEntity<User> findById(@PathVariable Long id){
-
-        User obj = userService.findById(id);
+    public ResponseEntity<User> findById(@PathVariable Long id) {
+        User obj = this.userService.findById(id);
         return ResponseEntity.ok().body(obj);
     }
 
     @PostMapping
-    @Validated(User.CreateUser.class)
-    public ResponseEntity<Void> create(@Valid @RequestBody User obj){
-        this.userService.create(obj);
+    public ResponseEntity<Void> create(@Valid @RequestBody UserCreateDTO obj) {
+        User user = this.userService.fromDTO(obj);
+        User newUser = this.userService.create(user);
         URI uri = ServletUriComponentsBuilder.fromCurrentRequest()
-                .path("/{id}")
-                .buildAndExpand(obj.getId())
-                .toUri();
+                .path("/{id}").buildAndExpand(newUser.getId()).toUri();
         return ResponseEntity.created(uri).build();
     }
 
     @PutMapping("/{id}")
-    @Validated(User.UpdateUser.class)
-    public ResponseEntity<Void> update(@Valid @RequestBody User obj, @PathVariable Long id){
+    public ResponseEntity<Void> update(@Valid @RequestBody UserUpdateDTO obj, @PathVariable Long id) {
         obj.setId(id);
-        this.userService.update(obj);
+        User user = this.userService.fromDTO(obj);
+        this.userService.update(user);
         return ResponseEntity.noContent().build();
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> delete(@PathVariable Long id){
+    public ResponseEntity<Void> delete(@PathVariable Long id) {
         this.userService.delete(id);
         return ResponseEntity.noContent().build();
     }
