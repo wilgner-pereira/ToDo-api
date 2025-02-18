@@ -9,13 +9,29 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.wilgner</groupId>
-	<artifactId>todosimple</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
-	<name>todosimple</name>
+	<artifactId>todosimpleapp</artifactId>
+	<name>todosimpleapp</name>
 	<description>Spring Boot API for To Do App</description>
 	<properties>
 		<java.version>17</java.version>
 	</properties>
+
+	<packaging>jar</packaging>
+	<build>
+		<finalName>todosimpleapp</finalName>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+			</plugin>
+			<plugin>
+				<groupId>org.projectlombok</groupId>
+				<artifactId>lombok</artifactId>
+				<version>1.18.30</version>
+			</plugin>
+		</plugins>
+	</build>
+
 	<dependencies>
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
@@ -95,22 +111,6 @@
 			<version>0.11.5</version>
 			<scope>runtime</scope>
 		</dependency>
-
-
 	</dependencies>
-
-	<build>
-		<plugins>
-			<plugin>
-				<groupId>org.springframework.boot</groupId>
-				<artifactId>spring-boot-maven-plugin</artifactId>
-			</plugin>
-			<plugin>
-				<groupId>org.projectlombok</groupId>
-				<artifactId>lombok</artifactId>
-				<version>1.18.30</version>
-			</plugin>
-		</plugins>
-	</build>
 
 </project>
